@@ -1,6 +1,5 @@
 import React from "react";
 import { ProfileUserProps } from "../types/index";
-import { div } from "motion/react-client";
 type UserProps = {
   user: ProfileUserProps;
 };

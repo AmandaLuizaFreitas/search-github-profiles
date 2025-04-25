@@ -12,8 +12,9 @@ const ProfileSearch = () => {
   const [userData, setUserData] = useState<ProfileUserProps | null>(null);
   const [loading, setLoading] = useState(false);
   const [wasSent, setWasSent] = useState(false);
-  // Animação do carregamento
+  const [error, setError] = useState(false);
 
+  // Animação do carregamento
   const dotVariants: Variants = {
     jump: {
       y: -30,
@@ -25,23 +26,32 @@ const ProfileSearch = () => {
       },
     },
   };
-  //  Chamada de APi
+
+  // Chamada de API
   const ApiCall = async () => {
     if (!userName) return;
+
     setWasSent(true);
     setLoading(true);
+    setError(false);
+    setUserData(null);
+
     try {
       const res = await fetch(`https://api.github.com/users/${userName}`);
       const data = await res.json();
       console.log(data);
-      setUserData(data as ProfileUserProps);
-      if (!data.message || data.message.toLowerCase() !== "Not Found") {
+
+      if (res.status === 200) {
         setUserData(data);
+        setError(false);
       } else {
         setUserData(null);
+        setError(true);
       }
     } catch (error) {
       console.error("Erro ao buscar perfil", error);
+      setUserData(null);
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -63,14 +73,18 @@ const ProfileSearch = () => {
         <input
           type="text"
           placeholder="Digite um usuário do Github"
-          className="text-black w-full p-2.5  outline-none placeholder:text-black "
+          className="text-black w-full p-2.5 outline-none placeholder:text-black"
           value={userName}
           onChange={(e) => setUserName(e.target.value)}
         />
-        <button className="cor-secondary p-3 cursor-pointer rounded-md "  onClick={ApiCall}>
+        <button
+          className="cor-secondary p-3 cursor-pointer rounded-md"
+          onClick={ApiCall}
+        >
           <Search />
         </button>
       </div>
+
       {loading && (
         <motion.div
           animate="jump"
@@ -82,19 +96,30 @@ const ProfileSearch = () => {
           <motion.div className="dot" variants={dotVariants}></motion.div>
         </motion.div>
       )}
-    {userData && (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.5 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{
-          duration: 0.8,
-          delay: 0.5,
-          ease: [0, 0.71, 0.2, 1.01],
-        }}
-      >
-        <UserFound user={userData} />
-      </motion.div>
-    )}
+
+      {error && !loading && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <ErrorMessage />
+        </motion.div>
+      )}
+
+      {userData && !loading && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{
+            duration: 0.8,
+            delay: 0.5,
+            ease: [0, 0.71, 0.2, 1.01],
+          }}
+        >
+          <UserFound user={userData} />
+        </motion.div>
+      )}
     </div>
   );
 };
