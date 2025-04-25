@@ -27,7 +27,7 @@ const ProfileSearch = () => {
     },
   };
 
-  // Chamada de API
+  
   const ApiCall = async () => {
     if (!userName) return;
 
